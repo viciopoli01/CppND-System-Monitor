@@ -92,13 +92,13 @@ float LinuxParser::MemoryUtilization() {
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() {
   string line;
-  long time = 0;
+  long time, standby;
   std::ifstream filestream(kProcDirectory + kUptimeFilename);
   if (filestream.is_open()) {
-    // std::getline(filestream, line);
-    // std::istringstream linestream(line);
-    filestream >> time;
-    return time;
+    std::getline(filestream, line);
+    std::istringstream linestream(line);
+    linestream >> time >> standby;
+    return time + standby;
   }
   return 0;
 }
@@ -154,12 +154,12 @@ long LinuxParser::IdleJiffies() {
 // TODO: Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization() {
   vector<string> cpu_utilization;
+  string value;
   std::ifstream filestream(kProcDirectory + kStatFilename);
   if (filestream) {
     string line;
     getline(filestream, line);
     std::istringstream line_stream(line);
-    string value;
     line_stream >> value;  // remove cpu
     while (line_stream >> value) {
       cpu_utilization.emplace_back(value);
@@ -232,9 +232,7 @@ string LinuxParser::Command(int pid) {
                            kCmdlineFilename);
   if (filestream.is_open()) {
     std::getline(filestream, line);
-    std::istringstream linestream(line);
-    linestream >> cmd;
-    return cmd;
+    return line;
   }
   return cmd;
 }
@@ -306,8 +304,8 @@ long LinuxParser::UpTime(int pid) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
     for (int i{0}; linestream >> val; i++) {
-      if (i == 22)
-        return stol(val) / sysconf(_SC_CLK_TCK);
+      if (i == 21)
+        return LinuxParser::UpTime() - stol(val) / sysconf(_SC_CLK_TCK);
     }
   }
   return 0;

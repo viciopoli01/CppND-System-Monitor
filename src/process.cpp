@@ -17,11 +17,23 @@ int Process::Pid() { return this->pid_; }
 
 // TODO: Return this process's CPU utilization
 float Process::CpuUtilization() {
-  float a = (float)LinuxParser::ActiveJiffies(this->pid_);
-
-  float b = (float)LinuxParser::Jiffies();
-  cpu_utilization = a / b;
+  currActive = LinuxParser::ActiveJiffies(this->pid_);
+  currTotal = LinuxParser::Jiffies();
+  float totald = currTotal - prevTotal;
+  float actived = currActive - prevActive;
+  _UpdateUtilization();
+  cpu_utilization = actived / totald;
   return cpu_utilization;
+}
+
+void Process::_UpdateUtilization() {
+  if (prevTotal == 0 && prevActive == 0) {
+    prevActive = LinuxParser::ActiveJiffies(this->pid_);
+    prevTotal = LinuxParser::Jiffies();
+    return;
+  }
+  prevActive = currActive;
+  prevTotal = currTotal;
 }
 
 // TODO: Return the command that generated this process
