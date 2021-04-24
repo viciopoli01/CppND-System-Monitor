@@ -20,13 +20,12 @@ class Process {
   long int UpTime();                       // TODO: See src/process.cpp
   bool operator<(Process const& a) const;  // TODO: See src/process.cpp
 
-  float getCPUutil() const{return cpu_utilization;};
-  void setCpuUtils(float a){cpu_utilization=a;}
+  float getCPUutil() const{return cpu_utilization;}
   // TODO: Declare any necessary private members
  private:
-  const int pid_{0};
-  const std::string user_{""};
-  const std::string command_{""};
+  int pid_{0};
+  std::string user_{""};
+  std::string command_{""};
   float cpu_utilization{0.0};
 };
 

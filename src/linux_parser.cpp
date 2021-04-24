@@ -95,8 +95,8 @@ long LinuxParser::UpTime() {
   long time = 0;
   std::ifstream filestream(kProcDirectory + kUptimeFilename);
   if (filestream.is_open()) {
-    //std::getline(filestream, line);
-    //std::istringstream linestream(line);
+    // std::getline(filestream, line);
+    // std::istringstream linestream(line);
     filestream >> time;
     return time;
   }
@@ -158,9 +158,9 @@ vector<string> LinuxParser::CpuUtilization() {
   if (filestream) {
     string line;
     getline(filestream, line);
-    line = std::regex_replace(line, std::regex("cpu "), "");
     std::istringstream line_stream(line);
     string value;
+    line_stream >> value;  // remove cpu
     while (line_stream >> value) {
       cpu_utilization.emplace_back(value);
     }
@@ -207,15 +207,19 @@ int LinuxParser::RunningProcesses() {
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::ActiveJiffies(int pid) {
-  string line;
-  long time = 0;
+  string line, val;
+  long utime, stime, cutime, cstime;
   std::ifstream filestream(kProcDirectory + std::to_string(pid) +
                            kStatFilename);
   if (filestream.is_open()) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
-    for (int i{0}; i < 23; i++) linestream >> time;
-    return LinuxParser::UpTime() - time / sysconf(_SC_CLK_TCK);
+    for (int i{0}; linestream >> val; i++) {
+      if (i == 13) {
+        linestream >> utime >> stime >> cutime >> cstime;
+        return utime + stime + cutime + cstime;
+      }
+    }
   }
   return 0;
 }
@@ -289,21 +293,22 @@ string LinuxParser::User(int pid) {
       }
     }
   }
+  return "";
 }
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid) {
-  string line;
-  long time = 0;
+  string line, val;
   std::ifstream filestream(kProcDirectory + std::to_string(pid) +
                            kStatFilename);
   if (filestream.is_open()) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
-    for (int i{0}; i < 23; i++) linestream >> time;
-    return LinuxParser::UpTime() - time / sysconf(_SC_CLK_TCK);
-    ;
+    for (int i{0}; linestream >> val; i++) {
+      if (i == 22)
+        return stol(val) / sysconf(_SC_CLK_TCK);
+    }
   }
   return 0;
 }

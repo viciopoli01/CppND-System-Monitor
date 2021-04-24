@@ -26,13 +26,9 @@ vector<Process>& System::Processes() {
   for (const auto& i : LinuxParser::Pids()) {
     processes_.emplace_back(
         Process(i, LinuxParser::User(i), LinuxParser::Command(i)));
-  }
-  bool a = false;
-  processes_[0].setCpuUtils(1.0);
-  if(processes_[1]<processes_[0])
-    a = true;
-  
+  }  
   std::sort(processes_.begin(), processes_.end());
+  std::reverse(processes_.begin(), processes_.end());
   return processes_;
 }
 
