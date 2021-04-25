@@ -1,38 +1,59 @@
+
+#include "system.h"
+
 #include <unistd.h>
+
 #include <cstddef>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "linux_parser.h"
 #include "process.h"
 #include "processor.h"
-#include "system.h"
 
 using std::set;
 using std::size_t;
 using std::string;
 using std::vector;
 
-// TODO: Return the system's CPU
+//  Return the system's CPU
 Processor& System::Cpu() { return cpu_; }
 
-// TODO: Return a container composed of the system's processes
-vector<Process>& System::Processes() { return processes_; }
+//  Return a container composed of the system's processes
+vector<Process>& System::Processes() {
+  processes_.clear();
 
-// TODO: Return the system's kernel identifier (string)
-std::string System::Kernel() { return string(); }
+  for (const auto& i : LinuxParser::Pids()) {
+    processes_.emplace_back(Process(i));
+  }
 
-// TODO: Return the system's memory utilization
-float System::MemoryUtilization() { return 0.0; }
+  std::sort(processes_.begin(), processes_.end());
+  // std::reverse(processes_.begin(), processes_.end());
+  // Not needed because I overloaded "less than" with "more than"
+  return processes_;
+}
 
-// TODO: Return the operating system name
-std::string System::OperatingSystem() { return string(); }
+//  Return the system's kernel identifier (string)
+std::string System::Kernel() {
+  if (Kernel_info == "") Kernel_info = LinuxParser::Kernel();
+  return Kernel_info;
+}
 
-// TODO: Return the number of processes actively running on the system
-int System::RunningProcesses() { return 0; }
+//  Return the system's memory utilization
+float System::MemoryUtilization() { return LinuxParser::MemoryUtilization(); }
 
-// TODO: Return the total number of processes on the system
-int System::TotalProcesses() { return 0; }
+//  Return the operating system name
+std::string System::OperatingSystem() {
+  if (OSinfo == "") OSinfo = LinuxParser::OperatingSystem();
+  return OSinfo;
+}
 
-// TODO: Return the number of seconds since the system started running
-long int System::UpTime() { return 0; }
+//  Return the number of processes actively running on the system
+int System::RunningProcesses() { return LinuxParser::RunningProcesses(); }
+
+//  Return the total number of processes on the system
+int System::TotalProcesses() { return LinuxParser::TotalProcesses(); }
+
+//  Return the number of seconds since the system started running
+long int System::UpTime() { return LinuxParser::UpTime(); }

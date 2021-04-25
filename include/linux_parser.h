@@ -27,7 +27,8 @@ int RunningProcesses();
 std::string OperatingSystem();
 std::string Kernel();
 
-// CPU
+// CPU // NOT USED, but can make more clear the process to get the jiffies,
+// I'll change this after the thesis.
 enum CPUStates {
   kUser_ = 0,
   kNice_,
